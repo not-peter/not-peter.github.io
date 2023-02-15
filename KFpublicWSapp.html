@@ -1,0 +1,82 @@
+<html>
+  <head>
+    <link rel="icon" type="image/svg+xml" href="https://futures.kraken.com/trade/assets/images/kraken/loader.svg">
+    <title>KF Public WebSocket Webapp</title>
+    <style>
+      body {
+        background-color: rgb(0, 0, 0);
+        color: rgb(98, 10, 133);
+      }
+      #log {
+        width: 90%;
+        height: 500px;
+        word-wrap: break-word;
+        border: 1px solid rgb(30, 210, 20);
+        background-color: rgb(0, 0, 0);
+        padding: 10px;
+        color: rgb(30, 210, 20);
+        overflow: auto;
+      }
+    </style>
+    <script>
+      var ws;
+
+      function connect() {
+        var feed = document.getElementById("feed").value;
+        var productIds = document.getElementById("product_ids").value.split(',');
+        
+        if (!productIds) {
+          var requestMessage = {
+            event: "subscribe",
+            feed: feed
+          };
+        } else {
+          var requestMessage = {
+            event: "subscribe",
+            feed: feed,
+            product_ids: productIds
+          };
+        }
+        
+        ws = new WebSocket("wss://futures.kraken.com/ws/v1");
+        
+        ws.onopen = function() {
+          document.getElementById("log").innerHTML += "WebSocket connection established<br>";
+          ws.send(JSON.stringify(requestMessage));
+        };
+        
+        ws.onmessage = function(e) {
+          document.getElementById("log").innerHTML += "Received message: " + e.data + "<br>";
+          document.getElementById("log").scrollTop = document.getElementById("log").scrollHeight;
+        };
+        
+        ws.onclose = function() {
+          document.getElementById("log").innerHTML += "WebSocket connection closed<br>";
+        };
+      }
+
+      function disconnect() {
+        ws.close();
+      }
+      
+      function clearLogs() {
+        document.getElementById("log").innerHTML = "";
+      }
+    </script>
+  </head>
+  <header style="display: flex; align-items: center; background-color: rgb(0, 0, 0, 0.9);">
+    <img src="https://futures.kraken.com/trade/assets/images/kraken/logo_white.svg" alt="Header Image">
+    <h1 style="color: rgb(255, 255, 255);">-Public WebSocket Webapp</h1>
+  </header>  
+  <body style="position: fixed; width: 100%; background-color: rgb(0, 0, 0);">
+    <input type="text" id="feed" placeholder="Feed">
+    <input type="text" id="product_ids" placeholder="Product IDs (separated by comma)"><br><br>
+    <button onclick="connect()">Connect</button>
+    <button onclick="disconnect()">Disconnect</button>
+    <button onclick="clearLogs()">Clear</button><br><br>
+  </body>
+  <section>
+    <p style="color: rgb(30, 210, 20);">Logs:</p>
+    <div id="log"></div>
+  </section>  
+</html>
