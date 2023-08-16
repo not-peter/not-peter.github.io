@@ -29,6 +29,7 @@
       display: flex;
       flex-direction: column;
       padding: 20px;
+      color: #fff;
     }
     
     input[type="text"] {
@@ -73,6 +74,12 @@
       margin: 0;
       margin-bottom: 10px;
     }
+
+    .subscribe-container {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 10px; /* Adjust as needed */
+    }
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -85,6 +92,7 @@
       const disconnectButton = document.getElementById("disconnectBtn");
       const clearButton = document.getElementById("clearBtn");
       const disclaimer = document.getElementById("disclaimer");
+      const ignoreSnapshot = document.getElementById("ignoreSnapshot");
       let ws;
       let unsubscribeMessage;
 
@@ -101,7 +109,13 @@
         };
 
         ws.onmessage = function(e) {
-          appendLog("Received message: " + e.data);
+            const data = JSON.parse(e.data);
+            const ignoreSnapshot = document.getElementById("ignoreSnapshot");
+            if (ignoreSnapshot.checked && data.feed.endsWith("_snapshot")){
+                //ignore snapshot message
+            }else {
+                appendLog("Received message: " + e.data);
+            }
         };
 
         ws.onclose = function() {
@@ -167,21 +181,25 @@
   </script>
 </head>
 <body>
-  <header>
-    <h1>KF Public WebSocket Webapp</h1>
-  </header>
-  <main>
-    <input type="text" id="feed" placeholder="Feed">
-    <input type="text" id="product_ids" placeholder="Product IDs (separated by comma)">
-    <br>
-    <br>
-    <button id="connectBtn">Connect</button>
-    <button id="subscribeBtn">Subscribe</button>
-    <button id="unsubscribeBtn">Unsubscribe</button>
-    <button id="disconnectBtn">Disconnect</button>
-    <button id="clearBtn">Clear</button>
-    <div id="log"></div>
-    <p id="disclaimer">Disclaimer: This web application uses public websockets provided by Kraken Futures.</p>
-  </main>
-</body>
+    <header>
+      <h1>KF Public WebSocket Webapp</h1>
+    </header>
+    <main>
+      <input type="text" id="feed" placeholder="Feed">
+      <input type="text" id="product_ids" placeholder="Product IDs (separated by comma)">
+      <br>
+      <br>
+      <button id="connectBtn">Connect</button>
+      <div class="subscribe-container">
+        <button id="subscribeBtn">Subscribe</button>
+        <input type="checkbox" id="ignoreSnapshot" name="ignoreSnapshot" value="True">
+        <label for="ignoreSnapshot">Ignore snapshot message</label>
+      </div>
+      <button id="unsubscribeBtn">Unsubscribe</button>
+      <button id="disconnectBtn">Disconnect</button>
+      <button id="clearBtn">Clear</button>
+      <div id="log"></div>
+      <p id="disclaimer">Disclaimer: This web application uses public websockets provided by Kraken Futures.</p>
+    </main>
+  </body>  
 </html>
